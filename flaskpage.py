@@ -29,13 +29,14 @@ def home():
 def about():
     return render_template('about.html', title = "About")
 
-@app.route("/upload", methods=['GET', 'POST'])
+@app.route("/upload", methods=['POST'])
 def upload():
-    return render_template('upload.html', title = "Upload")
+    # Upload image
+    return redirect(url_for('home'))
 
-@app.route("/uploader", methods=['GET', 'POST'])
-def uploader():
-    return render_template('uploader.html', title = "Upload")
+@app.route("/upload", methods=['GET'])
+def upload2():
+    return render_template('upload.html', title = "Upload")
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
