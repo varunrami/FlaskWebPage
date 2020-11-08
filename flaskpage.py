@@ -33,6 +33,10 @@ def about():
 def upload():
     return render_template('upload.html', title = "Upload")
 
+@app.route("/uploader", methods=['GET', 'POST'])
+def uploader():
+    return render_template('uploader.html', title = "Upload")
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
