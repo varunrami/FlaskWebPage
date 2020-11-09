@@ -13,7 +13,7 @@
     {% if title %}
       <title>{{ title }} page</title>
     {% else %}
-      <title>Posts</title>
+      <title>JPG Image Directory</title>
     {% endif %}
   </head>
   <body>
@@ -43,6 +43,7 @@
     <main role="main" class="container">
       <div class="row">
         <div class="col-md-8">
+          {% block search %}{% endblock %}
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
               {% for category, message in messages %}

@@ -1,4 +1,21 @@
 {% extends "layout.html" %}
+{% block search %}
+        <article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+      <form action="/action_page.php">
+        <label for="aname">Attribute Name:</label><br>
+        <input type="text" id="aname" name="aname" value=""><br>
+        <label for="cval">Constraint Value:</label><br>
+        <input type="text" id="cval" name="cval" value=""><br>
+        <label for="relop">Relational Operator:</label><br>
+        <input type="text" id="relop" name="relop" value=""><br><br>
+        <input type="submit" value="Submit">
+      </form> 
+          </div>
+        </article>
+{% endblock search %}
+
 {% block content %}
     {% for post in posts %}
         <article class="media content-section">

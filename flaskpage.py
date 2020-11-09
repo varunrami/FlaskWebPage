@@ -31,7 +31,6 @@ def about():
 
 @app.route("/upload", methods=['POST'])
 def upload():
-    # Upload image
     return redirect(url_for('home'))
 
 @app.route("/upload", methods=['GET'])
