@@ -36,7 +36,7 @@ def upload():
 
 @app.route("/upload", methods=['GET'])
 def upload2():
-    return render_template('upload.html', title = "Upload")
+    return render_template('upload.html', title = "Submit")
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
