@@ -20,9 +20,14 @@ posts = [
 ]
 
 
-@app.route("/")
-@app.route("/home")
+@app.route("/", methods=['GET'])
+@app.route("/home", methods=['GET'])
 def home():
+    return render_template('home.html')
+
+@app.route("/", methods=['POST'])
+@app.route("/home", methods=['POST'])
+def home2():
     return render_template('home.html', posts = posts)
 
 @app.route("/about")
