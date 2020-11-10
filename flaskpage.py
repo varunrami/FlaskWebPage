@@ -1,5 +1,8 @@
-from flask import Flask, render_template, url_for, flash, redirect
+from flask import Flask, render_template, url_for, flash, redirect, request
+import requests
+import base64
 from forms import RegistrationForm, LoginForm
+from exif import Image
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'sonaalpathlaipradeep'
@@ -19,42 +22,118 @@ posts = [
     }
 ]
 
+class WebStatus():
+	LOGIN_STATUS = None
+
+status = WebStatus()
 
 @app.route("/", methods=['GET'])
+def offline():
+	status.LOGIN_STATUS = False
+	return render_template('offline.html')
+
 @app.route("/home", methods=['GET'])
 def home():
-    return render_template('home.html')
+	if status.LOGIN_STATUS == True:
+		return render_template('home.html')
+	else:
+		return redirect(url_for('offline'))
+	
 
-@app.route("/", methods=['POST'])
 @app.route("/home", methods=['POST'])
 def home2():
-    return render_template('home.html', posts = posts)
+	data=request.form
+	ops = {'==' : '$eq', '!=' : '$ne', '<' : '$lt', '>' : '$gt', '<=' : '$lte', '>=' : '$gte'}
+	payload={}
+	payload["metadata."+data["aname"]]={ops[data["relop"]]:int(data["cval"])}
+	r=requests.post("http://localhost:5000/query_records",json=payload)
+	r=r.json()
+	i=0
+	for img in r:
+		img_enc=img['image']
+		with open("temp"+str(i)+".jpg",'wb') as t:
+			te=base64.b64decode(img_enc)
+			t.write(te)
+			i+=1
+	return render_template('home.html', posts = posts)
+
 
 @app.route("/about")
 def about():
-    return render_template('about.html', title = "About")
+	if status.LOGIN_STATUS == False:
+		return redirect(url_for('offline'))
+	return render_template('about.html', title = "About")
+
+@app.route("/about_off")
+def about2():
+    return render_template('about_off.html', title = "About")
 
 @app.route("/upload", methods=['POST'])
 def upload():
-    return redirect(url_for('home'))
+	payload={}
+	file = request.files['file']
+	file.save(file.filename)
+	#print(list(file))
+	fname=file.filename.split('.')
+	if fname[-1]!="jpg":
+		flash("Incompatibe image format. Please use jpg")
+	else:
+		payload['name']=file.filename
+		print(file.filename)
+		if 'file' in request.files:
+			with open(file.filename,'rb') as imgfile:
+				image_enc=base64.b64encode(imgfile.read())
+				print(str(image_enc)[2:-1])
+				imgfile.seek(0)
+				#print(image_string)
+				#with open("temp.jpg",'wb') as t:
+				#	te=base64.b64decode(image_string)
+				#	t.write(te)
+				myimage=Image(imgfile)
+				if myimage.has_exif==False:
+					flash("Image does not have exif metadata")
+				else:
+					payload['image']=str(image_enc)[2:-1]
+					payload['metadata']={}
+					for attr in dir(myimage):
+						try:
+							value=myimage.get(attr)
+							if value!=None or value!=null or type(value) not in [float,int,str]:
+								payload['metadata'][attr]=myimage.get(attr)
+						except:
+							continue
+					#print(payload)
+					r=requests.post("http://localhost:5000/create_record",json=payload)
+	return redirect(url_for('home'))
 
 @app.route("/upload", methods=['GET'])
 def upload2():
-    return render_template('upload.html', title = "Submit")
+	if status.LOGIN_STATUS == False:
+		return redirect(url_for('offline'))
+	return render_template('upload.html', title = "Submit")
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        flash("Account Created for : {}!".format(form.username.data), 'success')
-        return redirect(url_for('home'))
+	form = RegistrationForm()
+	if form.validate_on_submit():
+		flash("Account Created for : {}!".format(form.username.data), 'success')
+		return redirect(url_for('home'))
 
-    return render_template('register.html', title = "Registration", form = form)
+	return render_template('register.html', title = "Registration", form = form)
 
-@app.route("/login")
+@app.route("/login", methods=['POST', 'GET'])
 def login():
     form = LoginForm()
+    if form.validate_on_submit():
+        if form.username.data == 'guest' and form.password.data == 'guest':
+            flash("Logged in Succesfully", 'success')
+            status.LOGIN_STATUS = True
+            return redirect(url_for('home'))
+        else:
+            flash("Login Unsuccesful for : {}".format(form.username.data), 'warning')
+            return redirect(url_for('offline'))
+
     return render_template('login.html', title = "Login", form = form)
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(host="localhost", port=8000, debug = True)
