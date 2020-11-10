@@ -24,6 +24,7 @@ posts = [
 
 class WebStatus():
 	LOGIN_STATUS = None
+	POSTS = []
 
 status = WebStatus()
 
@@ -45,17 +46,28 @@ def home2():
 	data=request.form
 	ops = {'==' : '$eq', '!=' : '$ne', '<' : '$lt', '>' : '$gt', '<=' : '$lte', '>=' : '$gte'}
 	payload={}
+
 	payload["metadata."+data["aname"]]={ops[data["relop"]]:int(data["cval"])}
 	r=requests.post("http://localhost:5000/query_records",json=payload)
 	r=r.json()
-	i=0
-	for img in r:
-		img_enc=img['image']
-		with open("temp"+str(i)+".jpg",'wb') as t:
-			te=base64.b64decode(img_enc)
+
+	status.POSTS = []
+	tmp_post = {}
+
+	for ind, img in enumerate(r):
+		tmp_post["metadata"]=img['metadata']
+		tmp_post["title"] = img["name"]
+		tmp_post["author"] = "guest"
+		tmp_post["date_posted"] = "lol idk"
+		tmp_post["content"] = "temp"+str(ind)+".jpg"
+
+		status.POSTS.append(tmp_post)
+
+		with open("templates/" + "temp"+str(ind)+".jpg",'wb') as t:
+			te=base64.b64decode(img['image'])
 			t.write(te)
-			i+=1
-	return render_template('home.html', posts = posts)
+
+	return render_template('home.html', posts = status.POSTS)
 
 
 @app.route("/about")
@@ -72,23 +84,20 @@ def about2():
 def upload():
 	payload={}
 	file = request.files['file']
-	file.save(file.filename)
+	file.save("tmp_uploads/" + file.filename)
 	#print(list(file))
 	fname=file.filename.split('.')
 	if fname[-1]!="jpg":
 		flash("Incompatibe image format. Please use jpg")
 	else:
 		payload['name']=file.filename
-		print(file.filename)
+		# print(file.filename)
 		if 'file' in request.files:
-			with open(file.filename,'rb') as imgfile:
+			with open("tmp_uploads/" + file.filename,'rb') as imgfile:
 				image_enc=base64.b64encode(imgfile.read())
-				print(str(image_enc)[2:-1])
+				# print(str(image_enc)[2:-1])
 				imgfile.seek(0)
-				#print(image_string)
-				#with open("temp.jpg",'wb') as t:
-				#	te=base64.b64decode(image_string)
-				#	t.write(te)
+
 				myimage=Image(imgfile)
 				if myimage.has_exif==False:
 					flash("Image does not have exif metadata")
@@ -102,7 +111,7 @@ def upload():
 								payload['metadata'][attr]=myimage.get(attr)
 						except:
 							continue
-					#print(payload)
+					
 					r=requests.post("http://localhost:5000/create_record",json=payload)
 	return redirect(url_for('home'))
 
