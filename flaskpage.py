@@ -3,6 +3,7 @@ import requests
 import base64
 from forms import RegistrationForm, LoginForm
 from exif import Image
+import json
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'sonaalpathlaipradeep'
@@ -38,14 +39,21 @@ def home2():
 	r=r.json()
 
 	status.POSTS = []
-	print(r)
+	# print(r)
 	if r == {'error': 'data not found'}:
 		flash("404: No pictures found", "warning")
 	else:
 		for ind, img in enumerate(r):    
 			tmp_post = {}
-			
-			tmp_post["metadata"]=img['metadata']
+			new_meta = {}
+
+			for key, value in img['metadata'].items():
+				if key[0] == "_" or key in ['user_comments']:
+					continue
+
+				new_meta[key] = value
+
+			tmp_post["metadata"] = new_meta
 			tmp_post["title"] = img["name"]
 			tmp_post["author"] = status.GUEST_USRNAME
 			tmp_post["date_posted"] = img["time"]
