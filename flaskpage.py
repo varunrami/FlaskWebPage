@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, flash, redirect, request, jsonify
 import requests
 import base64
-from forms import RegistrationForm, LoginForm
+from forms import LoginForm
 from exif import Image
 import json
 import glob
@@ -49,6 +49,11 @@ def home2():
 	r=r.json()
 
 	status.POSTS = []
+	tmp_download_imgs = glob.glob('./static/tmp_uploads/*')
+	if tmp_download_imgs != []:
+		for img_loc in tmp_download_imgs:
+			os.remove(img_loc)
+
 	tmp_download_imgs = glob.glob('./static/tmp_downloads/*')
 	if tmp_download_imgs != []:
 		for img_loc in tmp_download_imgs:
@@ -62,7 +67,7 @@ def home2():
 			new_meta = {}
 
 			for key, value in img['metadata'].items():
-				if key[0] == "_" or len(str(value)) > 100:
+				if key[0] == "_" or len(str(value)) > 50 or key in ['user_comment', "MakerNote"]:
 					continue
 
 				new_meta[key] = value
