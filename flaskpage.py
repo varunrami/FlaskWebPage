@@ -62,7 +62,7 @@ def home2():
 			new_meta = {}
 
 			for key, value in img['metadata'].items():
-				if key[0] == "_" or key in ['user_comments']:
+				if key[0] == "_" or len(str(value)) > 100:
 					continue
 
 				new_meta[key] = value
@@ -133,15 +133,6 @@ def upload2():
 	if status.LOGIN_STATUS == False:
 		return redirect(url_for('offline'))
 	return render_template('upload.html', title = "Submit")
-
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-	form = RegistrationForm()
-	if form.validate_on_submit():
-		flash("Account Created for : {}!".format(form.username.data), 'success')
-		return redirect(url_for('home'))
-
-	return render_template('register.html', title = "Registration", form = form)
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
