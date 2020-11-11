@@ -4,6 +4,9 @@ import base64
 from forms import RegistrationForm, LoginForm
 from exif import Image
 import json
+import glob
+import os
+
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'sonaalpathlaipradeep'
@@ -34,12 +37,23 @@ def home2():
 	ops = {'==' : '$eq', '!=' : '$ne', '<' : '$lt', '>' : '$gt', '<=' : '$lte', '>=' : '$gte'}
 	payload={}
 
+	if data["cval"].isdigit():
+		payload["metadata."+data["aname"]]={ops[data["relop"]]:int(data["cval"])}
+	elif "." in data["cval"]:
+		payload["metadata."+data["aname"]]={ops[data["relop"]]:float(data["cval"])}
+	else:
+		payload["metadata."+data["aname"]]={ops[data["relop"]]:data["cval"]}
+
 	payload["metadata."+data["aname"]]={ops[data["relop"]]:int(data["cval"])}
 	r=requests.post("http://localhost:5000/query_records",json=payload)
 	r=r.json()
 
 	status.POSTS = []
-	# print(r)
+	tmp_download_imgs = glob.glob('./static/tmp_downloads/*')
+	if tmp_download_imgs != []:
+		for img_loc in tmp_download_imgs:
+			os.remove(img_loc)
+
 	if r == {'error': 'data not found'}:
 		flash("404: No pictures found", "warning")
 	else:
@@ -106,7 +120,7 @@ def upload():
 					for attr in dir(myimage):
 						try:
 							value=myimage.get(attr)
-							if value!=None or value!=null or type(value) not in [float,int,str]:
+							if value!=None or value!=null or (type(value) not in [float,int,str]):
 								payload['metadata'][attr]=myimage.get(attr)
 						except:
 							continue
