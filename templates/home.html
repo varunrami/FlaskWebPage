@@ -17,12 +17,13 @@
   </select><br>
           <label for="cval">Constraint Value:</label>
         <input type="text" id="cval" name="cval" value=""><br><br>
-        <input type="submit" value="Submit">
+        <input type="submit" value="Submit"><br>
       </form> 
           </div>
         </article>
 {% endblock search %}
 
+ 
 {% block content %}
     {% for post in posts %}
         <article class="media content-section">
@@ -32,7 +33,8 @@
               <small class="text-muted">{{ post.date_posted }}</small>
             </div>
             <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-            <img src={{post.content}} alt="{{post.title}}">
+            <img src="{{ url_for('static', filename = 'tmp_downloads/'+post.content) }}" alt="{{post.title}}">
+            <p>{{ post.metadata }}</p>
           </div>
         </article>
     {% endfor %}

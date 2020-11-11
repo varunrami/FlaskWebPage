@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, flash, redirect, request, jsonify
 import requests
 import base64
 from forms import RegistrationForm, LoginForm
@@ -6,21 +6,6 @@ from exif import Image
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'sonaalpathlaipradeep'
-
-posts = [
-    {
-        "title": "Post 1",
-        "author": "John",
-        "content": "This is the first blog",
-        "date_posted": "April 21st, 2010"
-    },
-    {
-        "title": "Post 2",
-        "author": "Doe",
-        "content": "This is the second blog",
-        "date_posted": "May 21st, 2010"
-    }
-]
 
 class WebStatus():
 	LOGIN_STATUS = None
@@ -52,20 +37,25 @@ def home2():
 	r=r.json()
 
 	status.POSTS = []
-	tmp_post = {}
+	print(r)
+	if r == {'error': 'data not found'}:
+		flash("404: No pictures found", "warning")
+	else:
+		for ind, img in enumerate(r):    
+			tmp_post = {}
+			
+			tmp_post["metadata"]=img['metadata']
+			tmp_post["title"] = img["name"]
+			tmp_post["author"] = "guest"
+			tmp_post["date_posted"] = "lol idk"
+			tmp_post["content"] = "temp"+str(ind)+".jpg"
+			
+			status.POSTS.append(tmp_post)
 
-	for ind, img in enumerate(r):
-		tmp_post["metadata"]=img['metadata']
-		tmp_post["title"] = img["name"]
-		tmp_post["author"] = "guest"
-		tmp_post["date_posted"] = "lol idk"
-		tmp_post["content"] = "temp"+str(ind)+".jpg"
+			with open("static/tmp_downloads/"+"temp"+str(ind)+".jpg",'wb') as t:
+				te=base64.b64decode(img['image'])
+				t.write(te)
 
-		status.POSTS.append(tmp_post)
-
-		with open("templates/" + "temp"+str(ind)+".jpg",'wb') as t:
-			te=base64.b64decode(img['image'])
-			t.write(te)
 
 	return render_template('home.html', posts = status.POSTS)
 
@@ -88,7 +78,7 @@ def upload():
 	#print(list(file))
 	fname=file.filename.split('.')
 	if fname[-1]!="jpg":
-		flash("Incompatibe image format. Please use jpg")
+		flash("Incompatibe image format. Please use jpg", "warning")
 	else:
 		payload['name']=file.filename
 		# print(file.filename)
