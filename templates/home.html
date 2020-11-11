@@ -29,14 +29,14 @@
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="#">{{ post.author }}</a>
+              <a class="mr-2" style="color: blue">{{ post.author }}</a>
               <small class="text-muted">{{ post.date_posted }}</small>
             </div>
-            <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
+            <h2><a class="article-title">{{ post.title }}</a></h2>
             <img src="{{ url_for('static', filename = 'tmp_downloads/'+post.content) }}" alt="{{post.title}}" width=600px><br>
             <div style="height:120px;width:600px;border:4px solid #eee;font:16px/26px Georgia, Garamond, Serif;overflow:auto;">
               {% for key, value in post.metadata.items() %}
-                <h5>{{key}} : {{value}}</h5>
+                <p style="text-align: center; text-transform: uppercase;">{{key}} : {{value}}</p>
               {% endfor %}
             </div>
           </div>
