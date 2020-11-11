@@ -34,7 +34,7 @@
             </div>
             <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
             <img src="{{ url_for('static', filename = 'tmp_downloads/'+post.content) }}" alt="{{post.title}}" width=600px><br>
-            <div style="height:120px;width:600px;border:1px solid #ccc;font:16px/26px Georgia, Garamond, Serif;overflow:auto;">
+            <div style="height:120px;width:600px;border:4px solid #eee;font:16px/26px Georgia, Garamond, Serif;overflow:auto;">
               {{ post.metadata }}
             </div>
           </div>

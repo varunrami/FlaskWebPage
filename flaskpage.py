@@ -9,7 +9,8 @@ app.config['SECRET_KEY'] = 'sonaalpathlaipradeep'
 
 class WebStatus():
 	LOGIN_STATUS = None
-	POSTS = []
+	POSTS = None
+	GUEST_USRNAME = None
 
 status = WebStatus()
 
@@ -46,8 +47,8 @@ def home2():
 			
 			tmp_post["metadata"]=img['metadata']
 			tmp_post["title"] = img["name"]
-			tmp_post["author"] = "guest"
-			tmp_post["date_posted"] = "lol idk"
+			tmp_post["author"] = status.GUEST_USRNAME
+			tmp_post["date_posted"] = img["time"]
 			tmp_post["content"] = "temp"+str(ind)+".jpg"
 			
 			status.POSTS.append(tmp_post)
@@ -126,6 +127,7 @@ def login():
     if form.validate_on_submit():
         if form.username.data == 'guest' and form.password.data == 'guest':
             flash("Logged in Succesfully", 'success')
+            status.GUEST_USRNAME = form.username.data
             status.LOGIN_STATUS = True
             return redirect(url_for('home'))
         else:
